@@ -5,7 +5,212 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#050507">
 <title>ITACHI</title>
-<link rel="stylesheet" href="style.css">
+<style>
+:root{
+  --red:#e10b17; --red2:#ff2b36; --dark:#050507; --ink:#f3f3f5; --mute:#9a9aa6;
+  --gold:#d9b45b; --ok:#35e0a0; --glass:rgba(10,10,14,.58); --line:rgba(225,11,23,.38);
+  --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--dark);color:var(--ink);
+  font-family:"Segoe UI",Roboto,"Trebuchet MS",Tahoma,sans-serif;overflow:hidden;-webkit-user-select:none;user-select:none}
+input,textarea{-webkit-user-select:text;user-select:text}
+.hidden{display:none!important}
+
+/* ---------- Background ---------- */
+#bg-fallback{position:fixed;inset:0;z-index:-4;
+  background:radial-gradient(ellipse at 50% 20%,#3a0409 0%,#14020a 45%,#050507 100%)}
+#bg-video{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-3}
+#bg-shade{position:fixed;inset:0;z-index:-2;
+  background:
+    radial-gradient(ellipse at center,rgba(0,0,0,.15) 0%,rgba(0,0,0,.62) 100%),
+    linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,.25) 40%,rgba(0,0,0,.7))}
+#embers{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.ember{position:absolute;bottom:-12px;width:4px;height:4px;border-radius:50%;
+  background:radial-gradient(circle,#ff6b73,#e10b17 60%,transparent 70%);
+  opacity:0;animation:rise linear infinite;filter:blur(.3px)}
+@keyframes rise{0%{transform:translateY(0) translateX(0);opacity:0}10%{opacity:.9}
+  100%{transform:translateY(-105vh) translateX(var(--dx,30px));opacity:0}}
+body.novideo #bg-video{display:none}
+
+/* ---------- Screens ---------- */
+.screen{position:fixed;inset:0;display:none;flex-direction:column;
+  padding:calc(var(--safe-t) + 10px) 16px calc(var(--safe-b) + 14px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.screen.active{display:flex;animation:fadeIn .5s ease}
+@keyframes fadeIn{from{opacity:0;transform:scale(.98)}to{opacity:1;transform:none}}
+
+/* ---------- Sharingan ---------- */
+.sharingan{display:block;filter:drop-shadow(0 0 14px rgba(225,11,23,.75))}
+.sharingan.big{width:128px;height:128px;margin:0 auto}
+.sharingan.mini{width:30px;height:30px}
+.sharingan.hero{width:150px;height:150px}
+.spin{animation:spin 9s linear infinite}
+.spin.fast{animation-duration:.8s}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- Login ---------- */
+.topbar-min{display:flex;justify-content:flex-end;min-height:44px}
+.login-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding-bottom:20px}
+.brand{font-size:46px;letter-spacing:12px;margin:8px 0 0;font-weight:800;color:#fff;
+  text-shadow:0 0 18px rgba(225,11,23,.85),0 0 40px rgba(225,11,23,.45);padding-inline-start:12px}
+.brand-sm{font-weight:800;letter-spacing:5px;text-shadow:0 0 10px rgba(225,11,23,.8)}
+.tag{margin:0 0 12px;color:var(--mute);letter-spacing:4px;font-size:11px}
+.glitch{position:relative}
+.glitch::before,.glitch::after{content:attr(data-text);position:absolute;inset:0;padding-inline-start:12px;overflow:hidden}
+.glitch::before{color:#ff2b36;transform:translateX(2px);clip-path:inset(0 0 60% 0);animation:gl1 3.2s infinite steps(1);text-shadow:none}
+.glitch::after{color:#6ad7ff;transform:translateX(-2px);clip-path:inset(55% 0 0 0);animation:gl2 2.7s infinite steps(1);text-shadow:none;opacity:.7}
+@keyframes gl1{0%,92%,100%{opacity:0}93%{opacity:.8;transform:translateX(3px)}96%{opacity:.6;transform:translateX(-3px)}}
+@keyframes gl2{0%,88%,100%{opacity:0}90%{opacity:.7;transform:translateX(-3px)}94%{opacity:.5;transform:translateX(3px)}}
+
+.glass{background:var(--glass);border:1px solid var(--line);border-radius:18px;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  box-shadow:0 0 0 1px rgba(255,255,255,.03) inset,0 10px 40px rgba(0,0,0,.55),0 0 28px rgba(225,11,23,.12)}
+#login-form{width:100%;max-width:380px;padding:20px 18px;display:flex;flex-direction:column;gap:12px}
+#login-form h2{margin:0 0 4px;font-size:16px;letter-spacing:3px;text-align:center;font-weight:600;color:#fff}
+.foot{color:var(--mute);font-size:11px;letter-spacing:2px;margin:12px 0 0}
+.error{min-height:18px;color:#ff6b73;font-size:13px;text-align:center}
+.linkbtn{background:none;border:0;color:var(--mute);font-size:12px;text-decoration:underline;padding:6px;cursor:pointer}
+
+/* ---------- Inputs / Buttons ---------- */
+.field{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;padding:0 12px;transition:.2s;min-height:50px}
+.field:focus-within{border-color:var(--red2);box-shadow:0 0 0 3px rgba(225,11,23,.22),0 0 18px rgba(225,11,23,.3)}
+.field input{flex:1;min-width:0;background:none;border:0;outline:0;color:#fff;font-size:16px;padding:12px 0;font-family:inherit}
+.field input::placeholder,textarea::placeholder{color:#777}
+.field.big{min-height:60px}
+.field.big input{font-size:21px;letter-spacing:2px;text-align:center}
+.field .ico{opacity:.8}
+.eye-toggle{background:none;border:0;color:var(--mute);font-size:16px;padding:6px;cursor:pointer}
+.field.grow{flex:1}
+
+.btn{border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);color:#fff;border-radius:14px;
+  padding:12px 14px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:transform .12s,box-shadow .2s,background .2s;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn:active{transform:scale(.96)}
+.btn.wide{width:100%}
+.btn.primary{background:linear-gradient(135deg,#ff2b36,#b3000c);border-color:#ff5a63;
+  box-shadow:0 0 22px rgba(225,11,23,.55);letter-spacing:3px;font-weight:800}
+.btn.danger{background:rgba(225,11,23,.2);border-color:rgba(255,43,54,.6);color:#ff8a91}
+.btn.ok{background:rgba(53,224,160,.14);border-color:rgba(53,224,160,.55);color:var(--ok)}
+.btn.scan{min-height:56px;font-size:16px}
+.mini-eye{width:26px;height:26px;display:inline-block}
+.mini-eye svg{width:100%;height:100%;animation:spin 3s linear infinite}
+.icon-btn{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:12px;
+  min-width:42px;height:42px;padding:0 10px;font-size:16px;cursor:pointer}
+.icon-btn:active{transform:scale(.92)}
+
+/* ---------- Main ---------- */
+.topbar{display:flex;align-items:center;justify-content:space-between;min-height:52px}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.topbar-right{display:flex;gap:8px}
+.main-wrap{flex:1;display:flex;flex-direction:column;gap:14px;padding-top:6px;max-width:520px;width:100%;margin:0 auto}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{padding:10px 6px;text-align:center;display:flex;flex-direction:column;gap:2px;border-radius:14px}
+.stat b{font-size:22px;color:#fff;text-shadow:0 0 10px rgba(225,11,23,.7)}
+.stat span{font-size:10px;letter-spacing:2px;color:var(--mute)}
+.eye-stage{position:relative;display:flex;justify-content:center;align-items:center;height:170px}
+.eye-ring{position:absolute;width:176px;height:176px;border-radius:50%;border:1px dashed rgba(255,43,54,.5);animation:spin 20s linear infinite reverse}
+.eye-stage .hero{cursor:pointer}
+.scan-card{padding:16px;display:flex;flex-direction:column;gap:12px}
+.btn-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.btn-grid.four{grid-template-columns:repeat(4,1fr)}
+.btn.tile{flex-direction:column;padding:12px 4px;font-size:11px;gap:4px;background:var(--glass);border-color:var(--line);backdrop-filter:blur(8px)}
+.btn.tile i{font-style:normal;font-size:20px}
+
+/* ---------- Sheets ---------- */
+.sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:.25s;z-index:40}
+.sheet-backdrop.show{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-height:88%;z-index:50;background:rgba(12,12,16,.96);
+  border:1px solid var(--line);border-bottom:0;border-radius:22px 22px 0 0;transform:translateY(105%);transition:transform .32s cubic-bezier(.2,.9,.3,1);
+  display:flex;flex-direction:column;box-shadow:0 -10px 50px rgba(225,11,23,.25)}
+.sheet.show{transform:none}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 8px}
+.sheet-head h3{margin:0;letter-spacing:3px;font-size:15px}
+.sheet-body{padding:8px 16px calc(var(--safe-b) + 18px);overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+.sheet-body.center{align-items:center;text-align:center}
+.sheet-body h4{margin:8px 0 0;font-size:12px;letter-spacing:3px;color:var(--red2)}
+.row{display:flex;gap:8px;align-items:stretch}
+.count-line{font-size:12px;color:var(--mute);letter-spacing:1px}
+.items{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.items li{display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 12px;font-variant-numeric:tabular-nums;letter-spacing:1px;direction:ltr}
+.items li small{color:var(--mute);letter-spacing:0}
+.items li .tag-b{font-size:10px;padding:3px 8px;border-radius:99px;letter-spacing:1px;font-weight:700}
+.tag-b.bad{background:rgba(225,11,23,.25);color:#ff8a91}
+.tag-b.good{background:rgba(53,224,160,.18);color:var(--ok)}
+.items li button{background:none;border:0;color:#ff6b73;font-size:18px;cursor:pointer}
+.empty{text-align:center;color:var(--mute);padding:20px 0;font-size:14px}
+.setting{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.setting small{display:block;color:var(--mute);font-size:11px;margin-top:2px;font-weight:400}
+.seg{display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.segbtn{background:none;border:0;color:#bbb;padding:8px 12px;font-size:13px;cursor:pointer}
+.segbtn.on{background:var(--red);color:#fff}
+.switch{position:relative;width:48px;height:28px;flex:none}
+.switch input{display:none}
+.switch span{position:absolute;inset:0;background:#2a2a32;border-radius:99px;transition:.2s;cursor:pointer}
+.switch span::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s}
+.switch input:checked+span{background:var(--red)}
+.switch input:checked+span::after{inset-inline-start:23px}
+textarea{width:100%;background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px;font-size:14px;direction:ltr;font-family:inherit}
+
+/* ---------- Scanning overlay ---------- */
+.scanning{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.82);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:22px;backdrop-filter:blur(4px)}
+.scan-eye{width:170px;height:170px;animation:spin .7s linear infinite}
+.scan-text{letter-spacing:6px;font-size:14px;color:#ff6b73;animation:blink 1s infinite;text-shadow:0 0 12px var(--red)}
+@keyframes blink{50%{opacity:.35}}
+
+/* ---------- Result overlay ---------- */
+.result{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:24px;
+  overflow:hidden;animation:fadeIn .35s ease}
+.result-fx{position:absolute;inset:0;z-index:0}
+.result-inner{position:relative;z-index:1;width:100%;max-width:440px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+.result-eye{width:150px;height:150px}
+.result-badge{font-size:12px;letter-spacing:6px;padding:6px 16px;border-radius:99px;font-weight:800}
+.result-num{font-size:26px;letter-spacing:3px;font-weight:700;direction:ltr;font-variant-numeric:tabular-nums}
+.result-lines{display:flex;flex-direction:column;gap:6px;min-height:100px}
+.result-lines .ln{opacity:0;transform:translateY(12px);animation:lineIn .6s forwards}
+@keyframes lineIn{to{opacity:1;transform:none}}
+.result-close{margin-top:10px;max-width:260px}
+
+/* BLOCKED style */
+.result.blocked{background:radial-gradient(ellipse at center,rgba(120,0,8,.93) 0%,rgba(10,0,2,.97) 75%)}
+.result.blocked .result-fx{background:repeating-linear-gradient(0deg,rgba(255,0,0,.05) 0 2px,transparent 2px 4px);animation:scan 6s linear infinite}
+@keyframes scan{to{background-position:0 80px}}
+.result.blocked .result-inner{animation:shake .7s}
+@keyframes shake{10%,90%{transform:translateX(-4px)}20%,80%{transform:translateX(7px)}30%,50%,70%{transform:translateX(-10px)}40%,60%{transform:translateX(10px)}}
+.result.blocked .result-eye{animation:spin 1.6s linear infinite;filter:drop-shadow(0 0 30px #ff0010)}
+.result.blocked .result-badge{background:#e10b17;color:#fff;box-shadow:0 0 26px #ff0010}
+.result.blocked .result-num{color:#ff7a82;text-shadow:0 0 16px #ff0010}
+.result.blocked .l1{font-size:25px;font-weight:900;letter-spacing:2px;color:#fff;text-shadow:0 0 18px #ff0010,0 0 40px #ff0010}
+.result.blocked .l2{font-size:17px;font-weight:700;letter-spacing:2px;color:#ffb3b8}
+.result.blocked .l3{font-size:19px;font-weight:900;letter-spacing:5px;color:#ff2b36;text-shadow:0 0 14px #ff0010;margin-top:8px}
+.result.blocked .result-close{background:#e10b17;border-color:#ff5a63;box-shadow:0 0 20px #ff0010}
+
+/* OK style */
+.result.clear{background:radial-gradient(ellipse at 50% 35%,rgba(10,60,45,.94) 0%,rgba(2,10,10,.97) 78%)}
+.result.clear .result-fx{background:radial-gradient(circle at 50% 30%,rgba(217,180,91,.2),transparent 55%)}
+.result.clear .result-eye{filter:drop-shadow(0 0 22px rgba(53,224,160,.8)) grayscale(.9) brightness(.8) hue-rotate(120deg)}
+.result.clear .result-badge{background:rgba(53,224,160,.18);color:var(--ok);border:1px solid var(--ok);box-shadow:0 0 22px rgba(53,224,160,.45)}
+.result.clear .result-num{color:#eafff6;text-shadow:0 0 14px rgba(53,224,160,.6)}
+.result.clear .l1{font-size:22px;font-weight:800;letter-spacing:3px;color:var(--gold);text-shadow:0 0 18px rgba(217,180,91,.55)}
+.result.clear .l2{font-size:15px;color:#c9f5e4;letter-spacing:1px;line-height:1.5}
+.result.clear .result-close{background:rgba(53,224,160,.16);border-color:var(--ok);color:var(--ok)}
+
+/* ---------- Toast ---------- */
+.toast{position:fixed;left:50%;bottom:calc(var(--safe-b) + 28px);transform:translate(-50%,30px);background:rgba(15,15,20,.95);
+  border:1px solid var(--line);color:#fff;padding:11px 18px;border-radius:99px;font-size:13px;opacity:0;pointer-events:none;
+  transition:.3s;z-index:100;max-width:88%;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* RTL tweaks */
+[dir="rtl"] .brand,[dir="rtl"] .glitch::before,[dir="rtl"] .glitch::after{padding-inline-start:12px}
+[dir="rtl"] body{font-family:Tahoma,"Segoe UI",Roboto,sans-serif}
+
+@media (max-height:640px){.eye-stage{height:120px}.hero{width:105px!important;height:105px!important}.eye-ring{width:124px;height:124px}.sharingan.big{width:90px;height:90px}}
+@media (prefers-reduced-motion:reduce){.spin,.ember{animation:none}}
+
+</style>
 </head>
 <body>
 
@@ -251,6 +456,423 @@
 
 <div id="toast" class="toast"></div>
 
-<script src="app.js"></script>
+<script>
+/* ITACHI — Number Blocklist Scanner */
+(function () {
+  'use strict';
+
+  /* ---------- helpers ---------- */
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('itachi.' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem('itachi.' + k, JSON.stringify(v)); } catch (e) {} },
+    del(k) { try { localStorage.removeItem('itachi.' + k); } catch (e) {} }
+  };
+
+  /* ---------- i18n ---------- */
+  const T = {
+    en: {
+      tagline: 'NUMBER BLOCKLIST SCANNER', loginTitle: 'ACCESS TERMINAL', setupTitle: 'CREATE YOUR ACCESS',
+      username: 'Username', password: 'Password', confirmPassword: 'Confirm password',
+      login: 'ENTER', create: 'CREATE ACCESS', resetApp: 'Forgot password? Reset app',
+      statBlocked: 'BLOCKED', statChecked: 'SCANNED', statHits: 'HITS',
+      enterNumber: 'Enter phone number', scan: 'SCAN NUMBER', paste: 'Paste', block: 'Block', unblock: 'Unblock',
+      list: 'Blocked List', history: 'History', settings: 'Settings', about: 'About',
+      addNumber: 'Add number to blocklist', add: 'ADD', search: 'Search...', total: 'Total',
+      emptyList: 'No blocked numbers yet.', emptyHistory: 'No scans yet.', clearHistory: 'Clear history',
+      language: 'Language', sound: 'Sound effects', vibration: 'Vibration', video: 'Background video',
+      smart: 'Smart match', smartDesc: 'Matches numbers with or without country code',
+      security: 'SECURITY', oldPassword: 'Current password', newPassword: 'New password', changePass: 'Change password',
+      data: 'DATA', export: 'Export', import: 'Import', clearAll: 'Clear all', ioHint: 'One number per line', apply: 'Apply',
+      aboutText: 'Scan any number against the Itachi blocklist. Your list is stored only on this device.',
+      scanning: 'SCANNING WITH SHARINGAN...', close: 'OK',
+      errFill: 'Fill in all fields.', errWrong: 'Wrong username or password.', errShort: 'Password must be at least 4 characters.',
+      errMatch: 'Passwords do not match.', errNum: 'Enter a valid phone number (5–15 digits).',
+      blockedOk: 'Number added to blocklist.', alreadyBlocked: 'Number is already blocked.',
+      unblockedOk: 'Number removed from blocklist.', notInList: 'Number is not in the blocklist.',
+      pasteFail: 'Could not read clipboard.', copied: 'Blocklist copied to clipboard.', imported: 'Imported numbers',
+      passChanged: 'Password changed.', passWrong: 'Current password is incorrect.',
+      confirmClear: 'Delete ALL blocked numbers?', confirmReset: 'This will erase your account and all data. Continue?',
+      confirmDel: 'Remove this number?', cleared: 'Cleared.', welcome: 'Welcome'
+    },
+    ar: {
+      tagline: 'ماسح الأرقام المحظورة', loginTitle: 'بوابة الدخول', setupTitle: 'أنشئ حساب الدخول',
+      username: 'اسم المستخدم', password: 'كلمة المرور', confirmPassword: 'تأكيد كلمة المرور',
+      login: 'دخول', create: 'إنشاء الحساب', resetApp: 'نسيت كلمة المرور؟ إعادة ضبط التطبيق',
+      statBlocked: 'محظور', statChecked: 'تم فحصه', statHits: 'إصابات',
+      enterNumber: 'اكتب رقم الهاتف', scan: 'افحص الرقم', paste: 'لصق', block: 'حظر', unblock: 'فك الحظر',
+      list: 'قائمة الحظر', history: 'السجل', settings: 'الإعدادات', about: 'حول',
+      addNumber: 'أضف رقماً إلى الحظر', add: 'إضافة', search: 'بحث...', total: 'الإجمالي',
+      emptyList: 'لا توجد أرقام محظورة بعد.', emptyHistory: 'لا توجد عمليات فحص بعد.', clearHistory: 'مسح السجل',
+      language: 'اللغة', sound: 'المؤثرات الصوتية', vibration: 'الاهتزاز', video: 'فيديو الخلفية',
+      smart: 'المطابقة الذكية', smartDesc: 'يطابق الرقم مع كود الدولة أو بدونه',
+      security: 'الأمان', oldPassword: 'كلمة المرور الحالية', newPassword: 'كلمة المرور الجديدة', changePass: 'تغيير كلمة المرور',
+      data: 'البيانات', export: 'تصدير', import: 'استيراد', clearAll: 'مسح الكل', ioHint: 'رقم في كل سطر', apply: 'تطبيق',
+      aboutText: 'افحص أي رقم مقابل قائمة حظر إيتاتشي. القائمة محفوظة على هذا الجهاز فقط.',
+      scanning: 'جاري الفحص بالشارينغان...', close: 'حسناً',
+      errFill: 'املأ كل الحقول.', errWrong: 'اسم المستخدم أو كلمة المرور خطأ.', errShort: 'كلمة المرور 4 أحرف على الأقل.',
+      errMatch: 'كلمتا المرور غير متطابقتين.', errNum: 'اكتب رقماً صحيحاً (من 5 إلى 15 رقماً).',
+      blockedOk: 'تمت إضافة الرقم إلى الحظر.', alreadyBlocked: 'الرقم محظور بالفعل.',
+      unblockedOk: 'تم فك حظر الرقم.', notInList: 'الرقم غير موجود في قائمة الحظر.',
+      pasteFail: 'تعذر قراءة الحافظة.', copied: 'تم نسخ القائمة.', imported: 'تم استيراد أرقام',
+      passChanged: 'تم تغيير كلمة المرور.', passWrong: 'كلمة المرور الحالية غير صحيحة.',
+      confirmClear: 'حذف كل الأرقام المحظورة؟', confirmReset: 'سيتم مسح الحساب وكل البيانات. متابعة؟',
+      confirmDel: 'حذف هذا الرقم؟', cleared: 'تم المسح.', welcome: 'أهلاً'
+    }
+  };
+  let lang = store.get('lang', 'en');
+  const t = k => (T[lang] && T[lang][k]) || T.en[k] || k;
+
+  function applyLang() {
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    $$('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+    $$('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+    $('#login-lang-txt').textContent = lang === 'ar' ? 'EN' : 'AR';
+    $('#seg-en').classList.toggle('on', lang === 'en');
+    $('#seg-ar').classList.toggle('on', lang === 'ar');
+    setLoginMode();
+    $('#result-close').textContent = t('close');
+    renderList(); renderHistory();
+  }
+  function setLang(l) { lang = l; store.set('lang', l); applyLang(); }
+  function toggleLang() { setLang(lang === 'en' ? 'ar' : 'en'); }
+
+  /* ---------- state ---------- */
+  let settings = Object.assign({ sound: true, vibe: true, video: true, smart: true }, store.get('settings', {}));
+  let blocked = store.get('blocked', []);       // [{n:"digits", t:timestamp}]
+  let history = store.get('history', []);       // [{n, r:'blocked'|'clear', t}]
+  let stats = Object.assign({ checked: 0, hits: 0 }, store.get('stats', {}));
+  const saveSettings = () => store.set('settings', settings);
+  const saveBlocked = () => store.set('blocked', blocked);
+  const saveHistory = () => store.set('history', history);
+  const saveStats = () => store.set('stats', stats);
+
+  /* ---------- numbers ---------- */
+  function digits(s) {
+    return String(s || '')
+      .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+      .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+      .replace(/\D/g, '');
+  }
+  function canon(s) { let d = digits(s); if (d.startsWith('00')) d = d.slice(2); return d; }
+  function valid(d) { return d.length >= 5 && d.length <= 15; }
+  function same(a, b) {
+    if (a === b) return true;
+    if (settings.smart && a.length >= 9 && b.length >= 9) return a.slice(-9) === b.slice(-9);
+    return false;
+  }
+  const findIdx = d => blocked.findIndex(x => same(x.n, d));
+  function pretty(d) { return '+' + d.replace(/(\d{1,3})(?=(\d{3})+$)/g, '$1 ').trim(); }
+  function display(raw, d) { const r = String(raw || '').trim(); return r ? r.replace(/[٠-٩]/g, c => c.charCodeAt(0) - 0x0660) : d; }
+
+  /* ---------- crypto (password) ---------- */
+  async function hash(pw, salt) {
+    const data = new TextEncoder().encode(salt + '::' + pw);
+    if (window.crypto && crypto.subtle) {
+      const buf = await crypto.subtle.digest('SHA-256', data);
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+    let h = 5381; for (const b of data) h = ((h << 5) + h + b) >>> 0; return 'x' + h.toString(16);
+  }
+  const rndSalt = () => Array.from(crypto.getRandomValues ? crypto.getRandomValues(new Uint8Array(8)) : [1, 2, 3, 4, 5, 6, 7, 8]).map(b => b.toString(16)).join('');
+
+  /* ---------- audio / vibration ---------- */
+  let ac;
+  function tone(freq, dur, type, vol, delay, slideTo) {
+    if (!settings.sound) return;
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      const o = ac.createOscillator(), g = ac.createGain(), t0 = ac.currentTime + (delay || 0);
+      o.type = type || 'sine'; o.frequency.setValueAtTime(freq, t0);
+      if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t0 + dur);
+      g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol || .12, t0 + .02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      o.connect(g).connect(ac.destination); o.start(t0); o.stop(t0 + dur + .05);
+    } catch (e) {}
+  }
+  const sClick = () => tone(520, .06, 'triangle', .06);
+  const sScan = () => { tone(300, .9, 'sawtooth', .05, 0, 900); };
+  const sBlocked = () => { tone(110, 1.1, 'sawtooth', .16, 0, 55); tone(82, 1.3, 'square', .08, .1, 41); tone(220, .25, 'square', .08, .0); };
+  const sClear = () => { tone(523, .25, 'sine', .12, 0); tone(659, .25, 'sine', .12, .13); tone(784, .5, 'sine', .12, .26); };
+  const sError = () => tone(180, .25, 'square', .07);
+  function vibe(p) { if (settings.vibe && navigator.vibrate) try { navigator.vibrate(p); } catch (e) {} }
+
+  /* ---------- toast ---------- */
+  let toastT;
+  function toast(msg) {
+    const el = $('#toast'); el.textContent = msg; el.classList.add('show');
+    clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2300);
+  }
+
+  /* ---------- background ---------- */
+  function applyVideo() {
+    document.body.classList.toggle('novideo', !settings.video);
+    const v = $('#bg-video');
+    if (settings.video) { const p = v.play(); if (p && p.catch) p.catch(() => {}); } else v.pause();
+  }
+  (function embers() {
+    const box = $('#embers');
+    for (let i = 0; i < 18; i++) {
+      const e = document.createElement('i'); e.className = 'ember';
+      const s = 2 + Math.random() * 4;
+      e.style.cssText = `left:${Math.random() * 100}%;width:${s}px;height:${s}px;animation-duration:${6 + Math.random() * 9}s;animation-delay:${-Math.random() * 12}s;--dx:${(Math.random() * 80 - 40) | 0}px`;
+      box.appendChild(e);
+    }
+  })();
+  $('#bg-video').addEventListener('error', () => { $('#bg-video').style.display = 'none'; });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && settings.video) $('#bg-video').play().catch(() => {}); });
+  document.addEventListener('touchstart', () => { if (settings.video) $('#bg-video').play().catch(() => {}); }, { once: true, passive: true });
+
+  /* ---------- layers (sheets / overlays) + back button ---------- */
+  const layers = [];
+  function openSheet(id) {
+    closeAllSheets(true);
+    $('#' + id).classList.add('show'); $('#backdrop').classList.add('show');
+    layers.push(id); history_push();
+  }
+  function closeAllSheets(silent) {
+    $$('.sheet.show').forEach(s => s.classList.remove('show'));
+    $('#backdrop').classList.remove('show');
+    for (let i = layers.length - 1; i >= 0; i--) if (layers[i].startsWith('sheet-')) layers.splice(i, 1);
+    if (!silent) sClick();
+  }
+  function history_push() { try { window.history.pushState({ l: 1 }, ''); } catch (e) {} }
+  window.addEventListener('popstate', () => {
+    if (!$('#result').classList.contains('hidden')) { hideResult(true); return; }
+    if ($$('.sheet.show').length) { closeAllSheets(true); }
+  });
+  $('#backdrop').addEventListener('click', () => closeAllSheets());
+  $$('[data-close]').forEach(b => b.addEventListener('click', () => closeAllSheets()));
+
+  /* ---------- auth ---------- */
+  let creds = store.get('creds', null);
+  const loginMode = () => (creds ? 'login' : 'setup');
+  function setLoginMode() {
+    const setup = loginMode() === 'setup';
+    $('#confirm-field').classList.toggle('hidden', !setup);
+    $('#login-title').textContent = setup ? t('setupTitle') : t('loginTitle');
+    $('#login-btn').textContent = setup ? t('create') : t('login');
+    $('#reset-app').classList.toggle('hidden', setup);
+  }
+  function showScreen(id) {
+    $$('.screen').forEach(s => s.classList.remove('active'));
+    $('#' + id).classList.add('active');
+  }
+  $('#toggle-pass').addEventListener('click', () => {
+    const i = $('#login-pass'); i.type = i.type === 'password' ? 'text' : 'password';
+  });
+  $('#login-lang').addEventListener('click', () => { sClick(); toggleLang(); });
+  $('#login-eye').addEventListener('click', () => { const e = $('#login-eye'); e.classList.add('fast'); sScan(); setTimeout(() => e.classList.remove('fast'), 900); });
+
+  $('#login-form').addEventListener('submit', async ev => {
+    ev.preventDefault();
+    const err = $('#login-error'); err.textContent = '';
+    const u = $('#login-user').value.trim(), p = $('#login-pass').value;
+    if (!u || !p) { err.textContent = t('errFill'); sError(); vibe(80); return; }
+    if (loginMode() === 'setup') {
+      if (p.length < 4) { err.textContent = t('errShort'); sError(); return; }
+      if (p !== $('#login-pass2').value) { err.textContent = t('errMatch'); sError(); return; }
+      const salt = rndSalt();
+      creds = { u: u.toLowerCase(), name: u, salt, h: await hash(p, salt) };
+      store.set('creds', creds);
+    } else {
+      const ok = creds.u === u.toLowerCase() && creds.h === await hash(p, creds.salt);
+      if (!ok) { err.textContent = t('errWrong'); sError(); vibe([60, 40, 60]); $('#login-form').animate([{ transform: 'translateX(-8px)' }, { transform: 'translateX(8px)' }, { transform: 'translateX(0)' }], { duration: 250, iterations: 2 }); return; }
+    }
+    enter();
+  });
+
+  function enter() {
+    const e = $('#login-eye'); e.classList.add('fast'); sScan();
+    setTimeout(() => {
+      e.classList.remove('fast');
+      $('#login-pass').value = ''; $('#login-pass2').value = '';
+      showScreen('screen-main'); sClear(); refresh();
+      toast(t('welcome') + ', ' + (creds.name || creds.u));
+    }, 850);
+  }
+  function logout() { closeAllSheets(true); hideResult(true); showScreen('screen-login'); setLoginMode(); sClick(); }
+  $('#btn-logout').addEventListener('click', logout);
+  $('#reset-app').addEventListener('click', () => {
+    if (!confirm(t('confirmReset'))) return;
+    ['creds', 'blocked', 'history', 'stats', 'settings'].forEach(store.del);
+    creds = null; blocked = []; history = []; stats = { checked: 0, hits: 0 };
+    settings = { sound: true, vibe: true, video: true, smart: true };
+    setLoginMode(); applyVideo();
+  });
+
+  /* ---------- main actions ---------- */
+  const numInput = $('#num-input');
+  $('#btn-clear').addEventListener('click', () => { numInput.value = ''; numInput.focus(); sClick(); });
+  numInput.addEventListener('keydown', e => { if (e.key === 'Enter') doScan(); });
+  $('#hero-eye').addEventListener('click', () => { const e = $('#hero-eye'); e.classList.add('fast'); sScan(); setTimeout(() => e.classList.remove('fast'), 900); });
+  $('#btn-lang').addEventListener('click', () => { sClick(); toggleLang(); });
+  $('#btn-sound').addEventListener('click', () => { settings.sound = !settings.sound; saveSettings(); refresh(); sClick(); });
+  $('#btn-paste').addEventListener('click', async () => {
+    sClick();
+    try { const tx = await navigator.clipboard.readText(); numInput.value = tx.trim().slice(0, 22); }
+    catch (e) { toast(t('pasteFail')); }
+  });
+  $('#btn-scan').addEventListener('click', doScan);
+  $('#btn-block').addEventListener('click', () => addBlocked(numInput.value, true));
+  $('#btn-unblock').addEventListener('click', () => removeBlocked(numInput.value));
+
+  function doScan() {
+    const raw = numInput.value, d = canon(raw);
+    if (!valid(d)) { toast(t('errNum')); sError(); vibe(80); return; }
+    numInput.blur();
+    $('#scan-text').textContent = t('scanning');
+    $('#scanning').classList.remove('hidden'); sScan(); vibe(40);
+    setTimeout(() => {
+      $('#scanning').classList.add('hidden');
+      const hit = findIdx(d) >= 0;
+      stats.checked++; if (hit) stats.hits++; saveStats();
+      history.unshift({ n: d, raw: display(raw, d), r: hit ? 'blocked' : 'clear', t: Date.now() });
+      history = history.slice(0, 50); saveHistory();
+      refresh(); showResult(hit, raw, d);
+    }, 1400);
+  }
+
+  function addBlocked(raw, fromMain) {
+    const d = canon(raw);
+    if (!valid(d)) { toast(t('errNum')); sError(); return false; }
+    if (findIdx(d) >= 0) { toast(t('alreadyBlocked')); sError(); return false; }
+    blocked.unshift({ n: d, t: Date.now() }); saveBlocked(); refresh(); renderList();
+    toast('⛔ ' + t('blockedOk')); tone(150, .35, 'square', .1, 0, 70); vibe(60);
+    return true;
+  }
+  function removeBlocked(raw) {
+    const d = canon(raw);
+    if (!valid(d)) { toast(t('errNum')); sError(); return; }
+    const i = findIdx(d);
+    if (i < 0) { toast(t('notInList')); sError(); return; }
+    blocked.splice(i, 1); saveBlocked(); refresh(); renderList();
+    toast('✔ ' + t('unblockedOk')); sClear();
+  }
+
+  /* ---------- result overlay ---------- */
+  function showResult(hit, raw, d) {
+    const el = $('#result'), lines = $('#result-lines');
+    el.className = 'result ' + (hit ? 'blocked' : 'clear');
+    $('#result-num').textContent = display(raw, d);
+    lines.innerHTML = '';
+    let arr;
+    if (hit) {
+      $('#result-badge').textContent = '⛔ BLOCKED';
+      arr = [['l1', 'ITACHI HAS BLOCKED YOU.'], ['l2', 'YOU ARE NO LONGER WELCOME HERE.'], ['l3', 'NO SECOND CHANCE']];
+      sBlocked(); vibe([200, 80, 200, 80, 500]);
+    } else {
+      $('#result-badge').textContent = '✔ NOT BLOCKED';
+      arr = [['l1', 'THIS NUMBER IS NOT BLOCKED.'], ['l2', 'All clear. No restrictions found — Itachi has no quarrel with you.']];
+      sClear(); vibe([60, 40, 120]);
+    }
+    arr.forEach((a, i) => {
+      const div = document.createElement('div'); div.className = 'ln ' + a[0]; div.textContent = a[1];
+      div.style.animationDelay = (0.35 + i * 0.7) + 's'; lines.appendChild(div);
+    });
+    el.classList.remove('hidden'); history_push();
+  }
+  function hideResult(fromBack) { $('#result').classList.add('hidden'); if (!fromBack) sClick(); }
+  $('#result-close').addEventListener('click', () => hideResult());
+
+  /* ---------- sheets: list ---------- */
+  function renderList() {
+    const q = digits($('#search-input').value);
+    const ul = $('#blocked-ul'); ul.innerHTML = '';
+    const items = blocked.filter(x => !q || x.n.includes(q));
+    items.forEach(x => {
+      const li = document.createElement('li');
+      const sp = document.createElement('span'); sp.textContent = pretty(x.n);
+      const b = document.createElement('button'); b.textContent = '🗑'; b.setAttribute('aria-label', 'delete');
+      b.addEventListener('click', () => { if (confirm(t('confirmDel'))) { blocked = blocked.filter(y => y !== x); saveBlocked(); refresh(); renderList(); sClick(); } });
+      li.append(sp, b); ul.appendChild(li);
+    });
+    $('#list-count').textContent = blocked.length;
+    $('#list-empty').classList.toggle('hidden', items.length > 0);
+  }
+  $('#open-list').addEventListener('click', () => { renderList(); openSheet('sheet-list'); sClick(); });
+  $('#add-btn').addEventListener('click', () => { if (addBlocked($('#add-input').value)) $('#add-input').value = ''; });
+  $('#add-input').addEventListener('keydown', e => { if (e.key === 'Enter') $('#add-btn').click(); });
+  $('#search-input').addEventListener('input', renderList);
+
+  /* ---------- sheets: history ---------- */
+  function renderHistory() {
+    const ul = $('#history-ul'); ul.innerHTML = '';
+    history.forEach(h => {
+      const li = document.createElement('li');
+      const left = document.createElement('span');
+      const d = new Date(h.t);
+      left.innerHTML = '';
+      const num = document.createElement('div'); num.textContent = h.raw || pretty(h.n);
+      const sm = document.createElement('small'); sm.textContent = d.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' });
+      left.append(num, sm);
+      const tag = document.createElement('span'); tag.className = 'tag-b ' + (h.r === 'blocked' ? 'bad' : 'good');
+      tag.textContent = h.r === 'blocked' ? 'BLOCKED' : 'NOT BLOCKED';
+      li.append(left, tag); ul.appendChild(li);
+    });
+    $('#history-empty').classList.toggle('hidden', history.length > 0);
+    $('#clear-history').classList.toggle('hidden', history.length === 0);
+  }
+  $('#open-history').addEventListener('click', () => { renderHistory(); openSheet('sheet-history'); sClick(); });
+  $('#clear-history').addEventListener('click', () => { history = []; saveHistory(); renderHistory(); toast(t('cleared')); });
+
+  /* ---------- sheets: settings ---------- */
+  $('#open-settings').addEventListener('click', () => { syncSettings(); openSheet('sheet-settings'); sClick(); });
+  $('#open-about').addEventListener('click', () => { openSheet('sheet-about'); sClick(); });
+  $('#seg-en').addEventListener('click', () => setLang('en'));
+  $('#seg-ar').addEventListener('click', () => setLang('ar'));
+  function syncSettings() {
+    $('#set-sound').checked = settings.sound; $('#set-vibe').checked = settings.vibe;
+    $('#set-video').checked = settings.video; $('#set-smart').checked = settings.smart;
+  }
+  [['set-sound', 'sound'], ['set-vibe', 'vibe'], ['set-video', 'video'], ['set-smart', 'smart']].forEach(([id, k]) => {
+    $('#' + id).addEventListener('change', e => { settings[k] = e.target.checked; saveSettings(); applyVideo(); refresh(); sClick(); });
+  });
+  $('#change-pass').addEventListener('click', async () => {
+    const o = $('#old-pass').value, n = $('#new-pass').value;
+    if (!(await hash(o, creds.salt) === creds.h)) { toast(t('passWrong')); sError(); return; }
+    if (n.length < 4) { toast(t('errShort')); sError(); return; }
+    creds.salt = rndSalt(); creds.h = await hash(n, creds.salt); store.set('creds', creds);
+    $('#old-pass').value = ''; $('#new-pass').value = ''; toast(t('passChanged')); sClear();
+  });
+  let ioMode = null;
+  function showIO(mode) {
+    ioMode = mode; $('#io-area').classList.remove('hidden');
+    $('#io-apply').classList.toggle('hidden', mode !== 'import');
+  }
+  $('#export-list').addEventListener('click', async () => {
+    showIO('export'); const txt = blocked.map(x => '+' + x.n).join('\n'); $('#io-area').value = txt;
+    try { await navigator.clipboard.writeText(txt); toast(t('copied')); } catch (e) {}
+  });
+  $('#import-list').addEventListener('click', () => { showIO('import'); $('#io-area').value = ''; $('#io-area').focus(); });
+  $('#io-apply').addEventListener('click', () => {
+    let c = 0;
+    $('#io-area').value.split(/[\n,;]+/).forEach(line => {
+      const d = canon(line); if (valid(d) && findIdx(d) < 0) { blocked.push({ n: d, t: Date.now() }); c++; }
+    });
+    saveBlocked(); refresh(); renderList(); toast(t('imported') + ': ' + c); $('#io-area').value = '';
+  });
+  $('#clear-list').addEventListener('click', () => {
+    if (!confirm(t('confirmClear'))) return;
+    blocked = []; saveBlocked(); refresh(); renderList(); toast(t('cleared'));
+  });
+
+  /* ---------- refresh UI ---------- */
+  function refresh() {
+    $('#stat-blocked').textContent = blocked.length;
+    $('#stat-checked').textContent = stats.checked;
+    $('#stat-hits').textContent = stats.hits;
+    $('#btn-sound').textContent = settings.sound ? '🔊' : '🔇';
+  }
+
+  /* ---------- init ---------- */
+  applyLang(); applyVideo(); refresh(); syncSettings();
+  if (!creds) $('#login-user').value = '';
+  else $('#login-user').value = creds.name || '';
+})();
+
+</script>
 </body>
 </html>
