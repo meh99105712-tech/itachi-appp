@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#050507">
+<title>ITACHI</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Background video + fallback -->
+<div id="bg-fallback"></div>
+<video id="bg-video" autoplay muted loop playsinline webkit-playsinline preload="auto">
+  <source src="https://upload.satoru.click/files/eefe56.mp4" type="video/mp4">
+</video>
+<div id="bg-shade"></div>
+<div id="embers"></div>
+
+<!-- Symbol: Sharingan -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <radialGradient id="irisG" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ff2b36"/>
+      <stop offset="60%" stop-color="#c3000d"/>
+      <stop offset="100%" stop-color="#6e0008"/>
+    </radialGradient>
+    <symbol id="tomoe" viewBox="-50 -50 100 100">
+      <path d="M0.00 -36.50 L-1.98 -36.23 L-3.93 -35.85 L-5.84 -35.36 L-7.71 -34.78 L-9.53 -34.09 L-11.31 -33.31 L-13.02 -32.44 L-14.68 -31.47 L-16.26 -30.43 L-17.78 -29.30 L-19.22 -28.10 L-20.58 -26.82 L-21.86 -25.48 L-23.05 -24.08 L-24.16 -22.63 L-25.17 -21.12 L-26.09 -19.57 L-26.91 -17.98 L-27.63 -16.36 L-28.26 -14.71 L-28.78 -13.04 L-29.19 -11.35 L-29.49 -9.65 L-29.65 -7.95 L-29.65 -7.95 L-28.86 -9.45 L-28.04 -10.90 L-27.15 -12.30 L-26.21 -13.64 L-25.20 -14.92 L-24.14 -16.13 L-23.03 -17.27 L-21.86 -18.35 L-20.66 -19.35 L-19.41 -20.27 L-18.12 -21.12 L-16.80 -21.89 L-15.45 -22.58 L-14.07 -23.19 L-12.68 -23.72 L-11.27 -24.17 L-9.85 -24.54 L-8.43 -24.83 L-7.00 -25.04 L-5.58 -25.17 L-4.16 -25.22 L-2.76 -25.19 L-1.37 -25.08 L0.00 -24.90Z" fill="#050505"/>
+      <circle cx="0.00" cy="-30.70" r="5.8" fill="#050505"/>
+    </symbol>
+    <symbol id="sharingan" viewBox="-50 -50 100 100">
+      <circle r="48" fill="#050505"/>
+      <circle r="45.500" fill="url(#irisG)"/>
+      <circle r="31" fill="none" stroke="#050505" stroke-width="1.600" opacity=".85"/>
+      <use href="#tomoe" x="-50" y="-50" width="100" height="100"/>
+      <use href="#tomoe" x="-50" y="-50" width="100" height="100" transform="rotate(120)"/>
+      <use href="#tomoe" x="-50" y="-50" width="100" height="100" transform="rotate(240)"/>
+      <circle r="9" fill="#050505"/>
+      <circle r="45.500" fill="none" stroke="#ff6b73" stroke-width=".6" opacity=".5"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ===================== LOGIN ===================== -->
+<main id="screen-login" class="screen active">
+  <div class="topbar-min">
+    <button class="icon-btn" id="login-lang" aria-label="language">🌐 <span id="login-lang-txt">AR</span></button>
+  </div>
+
+  <div class="login-wrap">
+    <svg class="sharingan big spin" id="login-eye" viewBox="-50 -50 100 100"><use href="#sharingan"/></svg>
+    <h1 class="brand glitch" data-text="ITACHI">ITACHI</h1>
+    <p class="tag" data-i18n="tagline">NUMBER BLOCKLIST SCANNER</p>
+
+    <form id="login-form" class="glass" autocomplete="off">
+      <h2 id="login-title" data-i18n="loginTitle">Access Terminal</h2>
+      <label class="field">
+        <span class="ico">👤</span>
+        <input id="login-user" type="text" autocapitalize="off" autocomplete="off" data-i18n-ph="username" placeholder="Username" maxlength="24">
+      </label>
+      <label class="field">
+        <span class="ico">🔒</span>
+        <input id="login-pass" type="password" autocomplete="off" data-i18n-ph="password" placeholder="Password" maxlength="64">
+        <button type="button" class="eye-toggle" id="toggle-pass" aria-label="show">👁</button>
+      </label>
+      <label class="field hidden" id="confirm-field">
+        <span class="ico">🔐</span>
+        <input id="login-pass2" type="password" autocomplete="off" data-i18n-ph="confirmPassword" placeholder="Confirm password" maxlength="64">
+      </label>
+      <div id="login-error" class="error" role="alert"></div>
+      <button type="submit" class="btn primary wide" id="login-btn" data-i18n="login">ENTER</button>
+      <button type="button" class="linkbtn" id="reset-app" data-i18n="resetApp">Forgot password? Reset app</button>
+    </form>
+    <p class="foot">© ITACHI · v1.0</p>
+  </div>
+</main>
+
+<!-- ===================== MAIN ===================== -->
+<main id="screen-main" class="screen">
+  <header class="topbar">
+    <div class="topbar-left">
+      <svg class="sharingan mini spin" viewBox="-50 -50 100 100"><use href="#sharingan"/></svg>
+      <span class="brand-sm">ITACHI</span>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" id="btn-lang" aria-label="language">🌐</button>
+      <button class="icon-btn" id="btn-sound" aria-label="sound">🔊</button>
+      <button class="icon-btn" id="btn-logout" aria-label="logout">⏻</button>
+    </div>
+  </header>
+
+  <section class="main-wrap">
+    <div class="stats">
+      <div class="stat glass"><b id="stat-blocked">0</b><span data-i18n="statBlocked">BLOCKED</span></div>
+      <div class="stat glass"><b id="stat-checked">0</b><span data-i18n="statChecked">SCANNED</span></div>
+      <div class="stat glass"><b id="stat-hits">0</b><span data-i18n="statHits">HITS</span></div>
+    </div>
+
+    <div class="eye-stage">
+      <svg class="sharingan hero spin" id="hero-eye" viewBox="-50 -50 100 100"><use href="#sharingan"/></svg>
+      <div class="eye-ring"></div>
+    </div>
+
+    <div class="glass scan-card">
+      <label class="field big">
+        <span class="ico">📞</span>
+        <input id="num-input" type="tel" inputmode="tel" autocomplete="off" data-i18n-ph="enterNumber" placeholder="Enter phone number" maxlength="22">
+        <button type="button" class="eye-toggle" id="btn-clear" aria-label="clear">✕</button>
+      </label>
+
+      <button class="btn primary wide scan" id="btn-scan">
+        <span class="mini-eye"><svg viewBox="-50 -50 100 100"><use href="#sharingan"/></svg></span>
+        <span data-i18n="scan">SCAN NUMBER</span>
+      </button>
+
+      <div class="btn-grid">
+        <button class="btn" id="btn-paste">📋 <span data-i18n="paste">Paste</span></button>
+        <button class="btn danger" id="btn-block">⛔ <span data-i18n="block">Block</span></button>
+        <button class="btn ok" id="btn-unblock">✔ <span data-i18n="unblock">Unblock</span></button>
+      </div>
+    </div>
+
+    <div class="btn-grid four">
+      <button class="btn tile" id="open-list"><i>🗂</i><span data-i18n="list">Blocked List</span></button>
+      <button class="btn tile" id="open-history"><i>🕘</i><span data-i18n="history">History</span></button>
+      <button class="btn tile" id="open-settings"><i>⚙</i><span data-i18n="settings">Settings</span></button>
+      <button class="btn tile" id="open-about"><i>👁</i><span data-i18n="about">About</span></button>
+    </div>
+  </section>
+</main>
+
+<!-- ===================== SHEETS ===================== -->
+<div class="sheet-backdrop" id="backdrop"></div>
+
+<!-- Blocked list -->
+<section class="sheet" id="sheet-list">
+  <div class="sheet-head">
+    <h3 data-i18n="list">Blocked List</h3>
+    <button class="icon-btn close" data-close>✕</button>
+  </div>
+  <div class="sheet-body">
+    <div class="row">
+      <label class="field grow">
+        <span class="ico">➕</span>
+        <input id="add-input" type="tel" inputmode="tel" data-i18n-ph="addNumber" placeholder="Add number to blocklist" maxlength="22">
+      </label>
+      <button class="btn danger" id="add-btn" data-i18n="add">ADD</button>
+    </div>
+    <label class="field">
+      <span class="ico">🔍</span>
+      <input id="search-input" type="text" data-i18n-ph="search" placeholder="Search...">
+    </label>
+    <div class="count-line"><span data-i18n="total">Total</span>: <b id="list-count">0</b></div>
+    <ul id="blocked-ul" class="items"></ul>
+    <div id="list-empty" class="empty hidden" data-i18n="emptyList">No blocked numbers yet.</div>
+  </div>
+</section>
+
+<!-- History -->
+<section class="sheet" id="sheet-history">
+  <div class="sheet-head">
+    <h3 data-i18n="history">History</h3>
+    <button class="icon-btn close" data-close>✕</button>
+  </div>
+  <div class="sheet-body">
+    <ul id="history-ul" class="items"></ul>
+    <div id="history-empty" class="empty hidden" data-i18n="emptyHistory">No scans yet.</div>
+    <button class="btn wide" id="clear-history" data-i18n="clearHistory">Clear history</button>
+  </div>
+</section>
+
+<!-- Settings -->
+<section class="sheet" id="sheet-settings">
+  <div class="sheet-head">
+    <h3 data-i18n="settings">Settings</h3>
+    <button class="icon-btn close" data-close>✕</button>
+  </div>
+  <div class="sheet-body">
+    <div class="setting">
+      <div><b data-i18n="language">Language</b></div>
+      <div class="seg">
+        <button id="seg-en" class="segbtn">English</button>
+        <button id="seg-ar" class="segbtn">العربية</button>
+      </div>
+    </div>
+    <div class="setting">
+      <div><b data-i18n="sound">Sound effects</b></div>
+      <label class="switch"><input type="checkbox" id="set-sound"><span></span></label>
+    </div>
+    <div class="setting">
+      <div><b data-i18n="vibration">Vibration</b></div>
+      <label class="switch"><input type="checkbox" id="set-vibe"><span></span></label>
+    </div>
+    <div class="setting">
+      <div><b data-i18n="video">Background video</b></div>
+      <label class="switch"><input type="checkbox" id="set-video"><span></span></label>
+    </div>
+    <div class="setting">
+      <div><b data-i18n="smart">Smart match</b><small data-i18n="smartDesc">Matches numbers with or without country code</small></div>
+      <label class="switch"><input type="checkbox" id="set-smart"><span></span></label>
+    </div>
+
+    <h4 data-i18n="security">Security</h4>
+    <label class="field"><span class="ico">🔒</span><input id="old-pass" type="password" data-i18n-ph="oldPassword" placeholder="Current password"></label>
+    <label class="field"><span class="ico">🔑</span><input id="new-pass" type="password" data-i18n-ph="newPassword" placeholder="New password"></label>
+    <button class="btn wide" id="change-pass" data-i18n="changePass">Change password</button>
+
+    <h4 data-i18n="data">Data</h4>
+    <div class="btn-grid">
+      <button class="btn" id="export-list">⬆ <span data-i18n="export">Export</span></button>
+      <button class="btn" id="import-list">⬇ <span data-i18n="import">Import</span></button>
+      <button class="btn danger" id="clear-list">🗑 <span data-i18n="clearAll">Clear all</span></button>
+    </div>
+    <textarea id="io-area" class="hidden" rows="5" data-i18n-ph="ioHint" placeholder="One number per line"></textarea>
+    <button class="btn primary wide hidden" id="io-apply" data-i18n="apply">Apply</button>
+  </div>
+</section>
+
+<!-- About -->
+<section class="sheet" id="sheet-about">
+  <div class="sheet-head">
+    <h3 data-i18n="about">About</h3>
+    <button class="icon-btn close" data-close>✕</button>
+  </div>
+  <div class="sheet-body center">
+    <svg class="sharingan big spin" viewBox="-50 -50 100 100"><use href="#sharingan"/></svg>
+    <h2 class="brand-sm" style="font-size:26px">ITACHI</h2>
+    <p data-i18n="aboutText">Scan any number against the Itachi blocklist. Your list is stored only on this device.</p>
+    <p class="foot">v1.0</p>
+  </div>
+</section>
+
+<!-- ===================== RESULT OVERLAY ===================== -->
+<div id="result" class="result hidden">
+  <div class="result-fx"></div>
+  <div class="result-inner">
+    <svg class="sharingan result-eye" viewBox="-50 -50 100 100"><use href="#sharingan"/></svg>
+    <div class="result-badge" id="result-badge"></div>
+    <div class="result-num" id="result-num"></div>
+    <div class="result-lines" id="result-lines"></div>
+    <button class="btn wide result-close" id="result-close">OK</button>
+  </div>
+</div>
+
+<!-- Scanning overlay -->
+<div id="scanning" class="scanning hidden">
+  <svg class="sharingan scan-eye" viewBox="-50 -50 100 100"><use href="#sharingan"/></svg>
+  <div class="scan-text" id="scan-text">SCANNING...</div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
